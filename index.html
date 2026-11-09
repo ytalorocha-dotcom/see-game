@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aventuras Zen do Panda: Alonga & Relaxa!</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts (Fredoka) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Fredoka', cursive, sans-serif;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Animações interativas do mascote */
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(1.5deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+
+    @keyframes pulse-gentle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    @keyframes stretch-giraffe {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      50% { transform: translateY(-18px) scaleY(1.15); }
+    }
+
+    @keyframes breathe-butterfly {
+      0%, 100% { transform: scale(0.92); opacity: 0.85; }
+      50% { transform: scale(1.22); opacity: 1; }
+    }
+
+    @keyframes rotate-owl {
+      0% { transform: rotate(-14deg); }
+      50% { transform: rotate(14deg); }
+      100% { transform: rotate(-14deg); }
+    }
+
+    @keyframes sleep-bear {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.04) translateY(4px); }
+    }
+
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .animate-pulse-btn {
+      animation: pulse-gentle 2s infinite;
+    }
+
+    .pose-giraffe { animation: stretch-giraffe 3s infinite ease-in-out; }
+    .pose-butterfly { animation: breathe-butterfly 4s infinite ease-in-out; }
+    .pose-owl { animation: rotate-owl 2.5s infinite ease-in-out; }
+    .pose-bear { animation: sleep-bear 4s infinite ease-in-out; }
+
+    /* Esconder scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #fb7185;
+      border-radius: 999px;
+    }
+
+    /* Glassmorphism custom */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border: 3px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-700">
+
+  <!-- Top Navigation / Header -->
+  <header class="p-4 w-full flex justify-between items-center max-w-5xl mx-auto z-10">
+    <div class="flex items-center space-x-3 bg-white/80 px-4 py-2 rounded-full shadow-md border-2 border-pink-200">
+      <span class="text-3xl">🐼</span>
+      <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        Panda Zen: Vida Saudável
+      </h1>
+    </div>
+
+    <!-- Contadores & Controles -->
+    <div class="flex items-center space-x-3">
+      <!-- Pontos / Estrelas -->
+      <div class="flex items-center bg-amber-100 border-2 border-amber-300 text-amber-600 font-bold px-4 py-1.5 rounded-full shadow-sm text-lg">
+        <i class="fa-solid fa-star text-amber-400 mr-2 text-xl animate-bounce"></i>
+        <span id="star-count">0</span>
+      </div>
+
+      <!-- Som Mudar -->
+      <button id="btn-audio" onclick="toggleAudio()" class="px-4 py-1.5 bg-gradient-to-r from-amber-400 to-pink-500 hover:from-amber-500 hover:to-pink-600 text-white font-bold rounded-full border-2 border-white shadow-md flex items-center space-x-2 transition hover:scale-105 active:scale-95 text-sm">
+        <i id="audio-icon" class="fa-solid fa-music text-base"></i>
+        <span id="audio-text">Música: LIGAR 🎵</span>
+      </button>
+
+      <!-- Seletor de Voz / Modal Toggle -->
+      <button id="btn-voice-config" onclick="openVoiceModal()" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-pink-500 font-bold rounded-full border-2 border-pink-200 shadow-md flex items-center space-x-2 transition hover:scale-105 active:scale-95 text-sm">
+        <i id="voice-icon" class="fa-solid fa-wand-magic-sparkles text-base text-purple-500"></i>
+        <span id="voice-text">Voz do Panda 🎤</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Modal Seletor de Voz -->
+  <div id="modal-voice" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white border-4 border-pink-300 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 relative">
+      <button onclick="closeVoiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center">
+        ✕
+      </button>
+
+      <div class="text-center space-y-1">
+        <span class="text-4xl">🎙️</span>
+        <h3 class="text-2xl font-extrabold text-slate-800">Ajuste da Voz Natural</h3>
+        <p class="text-xs text-slate-500">Escolha a melhor voz do seu dispositivo para o Panda falar com você!</p>
+      </div>
+
+      <!-- Seletor de voz nativa do sistema -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-700 block">Vozes em Português Disponíveis:</label>
+        <select id="sys-voice-select" onchange="onSystemVoiceChange()" class="w-full bg-slate-50 border-2 border-pink-200 text-slate-700 text-xs font-semibold p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400">
+          <option value="">Procurando vozes naturais...</option>
+        </select>
+      </div>
+
+      <!-- Ajuste de Velocidade -->
+      <div class="space-y-2 bg-purple-50/60 p-3 rounded-2xl border border-purple-100">
+        <div class="flex justify-between items-center text-xs font-bold text-purple-700">
+          <span>Velocidade da Fala:</span>
+          <span id="rate-val-display">Calma e Pausada</span>
+        </div>
+        <input type="range" id="voice-rate-slider" min="0.7" max="1.1" step="0.05" value="0.85" oninput="onRateSliderChange()" class="w-full accent-purple-500 cursor-pointer">
+      </div>
+
+      <!-- Ajuste do Tom de Voz -->
+      <div class="space-y-2 bg-pink-50/60 p-3 rounded-2xl border border-pink-100">
+        <div class="flex justify-between items-center text-xs font-bold text-pink-700">
+          <span>Tom da Voz (Pitch):</span>
+          <span id="pitch-val-display">Amigável</span>
+        </div>
+        <input type="range" id="voice-pitch-slider" min="0.8" max="1.3" step="0.05" value="1.0" oninput="onPitchSliderChange()" class="w-full accent-pink-500 cursor-pointer">
+      </div>
+
+      <!-- Botões de Teste -->
+      <div class="pt-2 flex justify-between items-center space-x-3">
+        <button onclick="testVoice()" class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>Ouvir Exemplo!</span>
+        </button>
+        <button onclick="closeVoiceModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-5 rounded-xl text-sm transition">
+          Pronto!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Game Container -->
+  <main class="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10">
+
+    <!-- Screen 1: Welcome Screen -->
+    <div id="screen-welcome" class="w-full text-center space-y-6 glass-card p-6 md:p-10 rounded-3xl">
+      <div class="relative inline-block">
+        <div class="w-48 h-48 md:w-56 md:h-56 mx-auto bg-gradient-to-tr from-teal-200 to-pink-200 rounded-full flex items-center justify-center border-4 border-white shadow-inner animate-float">
+          <!-- Mascote Avatar SVG -->
+          <svg class="w-36 h-36 md:w-44 md:h-44" viewBox="0 0 200 200">
+            <circle cx="50" cy="50" r="22" fill="#334155" />
+            <circle cx="150" cy="50" r="22" fill="#334155" />
+            <circle cx="50" cy="50" r="12" fill="#f472b6" />
+            <circle cx="150" cy="50" r="12" fill="#f472b6" />
+            <circle cx="100" cy="110" r="65" fill="#ffffff" stroke="#e2e8f0" stroke-width="4" />
+            <ellipse cx="75" cy="105" rx="16" ry="20" fill="#334155" transform="rotate(-15 75 105)" />
+            <ellipse cx="125" cy="105" rx="16" ry="20" fill="#334155" transform="rotate(15 125 105)" />
+            <circle cx="78" cy="100" r="5" fill="#ffffff" />
+            <circle cx="122" cy="100" r="5" fill="#ffffff" />
+            <ellipse cx="100" cy="120" rx="10" ry="7" fill="#334155" />
+            <circle cx="60" cy="125" r="10" fill="#f472b6" opacity="0.5" />
+            <circle cx="140" cy="125" r="10" fill="#f472b6" opacity="0.5" />
+            <path d="M 90 130 Q 100 140 110 130" fill="transparent" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+            <path d="M 100 45 Q 115 30 130 35 Q 120 50 100 45" fill="#4ade80" />
+          </svg>
+        </div>
+        <span class="absolute bottom-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow border-2 border-white animate-pulse">
+          Seu Tutor de Saúde! ✨
+        </span>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800">
+          Hora de Alongar e Relaxar! 🌿
+        </h2>
+        <p class="text-slate-600 text-lg max-w-lg mx-auto">
+          Venha brincar com o <strong class="text-pink-500">Panda Zen</strong>! Vamos esticar o corpo, respirar bem fundo e ganhar selos mágicos de super-herói!
+        </p>
+      </div>
+
+      <button onclick="startGame()" class="animate-pulse-btn inline-flex items-center space-x-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-2xl px-8 py-4 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 border-4 border-white">
+        <i class="fa-solid fa-play"></i>
+        <span>Começar Aventura!</span>
+      </button>
+
+      <!-- Conquistas Rápidas -->
+      <div id="badge-preview" class="pt-4 border-t border-slate-200/60 flex justify-center space-x-4">
+        <div class="text-center opacity-40" id="badge-1">
+          <div class="w-12 h-12 bg-amber-200 rounded-full flex items-center justify-center mx-auto text-2xl shadow">🦒</div>
+          <span class="text-xs font-semibold text-slate-600">Girafa</span>
+        </div>
+        <div class="text-center opacity-40" id="badge-2">
+          <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mx-auto text-2xl shadow">🦋</div>
+          <span class="text-xs font-semibold text-slate-600">Borboleta</span>
+        </div>
+        <div class="text-center opacity-40" id="badge-3">
+          <div class="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center mx-auto text-2xl shadow">🦉</div>
+          <span class="text-xs font-semibold text-slate-600">Coruja</span>
+        </div>
+        <div class="text-center opacity-40" id="badge-4">
+          <div class="w-12 h-12 bg-emerald-200 rounded-full flex items-center justify-center mx-auto text-2xl shadow">🐻</div>
+          <span class="text-xs font-semibold text-slate-600">Ursinho</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: Exercise Gameplay -->
+    <div id="screen-exercise" class="hidden w-full glass-card p-6 md:p-8 rounded-3xl relative">
+      
+      <!-- Top Level Tracker -->
+      <div class="flex justify-between items-center mb-4">
+        <span id="exercise-step" class="bg-purple-100 text-purple-700 px-4 py-1.5 rounded-full text-sm font-bold border border-purple-200">
+          Exercício 1 de 4
+        </span>
+        <button onclick="confirmExit()" class="text-slate-400 hover:text-slate-600 transition text-sm font-bold flex items-center space-x-1">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        
+        <!-- Panda Visual & Speech Balloon -->
+        <div class="md:col-span-5 flex flex-col items-center">
+          
+          <!-- Balão de Fala do Panda -->
+          <div class="relative bg-white border-2 border-pink-300 p-4 rounded-2xl shadow-md mb-4 w-full text-center min-h-[90px] flex items-center justify-center">
+            <p id="panda-speech" class="text-slate-700 text-base md:text-lg font-semibold leading-relaxed">
+              "Olá amiguinho! Vamos começar esticando bem alto!"
+            </p>
+            <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-pink-300"></div>
+          </div>
+
+          <!-- Mascote Principal com Animações -->
+          <div class="relative">
+            <div id="panda-avatar-container" class="w-44 h-44 md:w-52 md:h-52 bg-gradient-to-tr from-emerald-100 to-teal-100 rounded-full flex items-center justify-center border-4 border-white shadow-md">
+              <span id="exercise-icon-display" class="text-7xl md:text-8xl select-none transition-transform">
+                🦒
+              </span>
+            </div>
+            
+            <div id="posture-label" class="mt-3 text-center bg-white/90 border border-slate-200 text-slate-800 font-bold px-4 py-1 rounded-full shadow-sm text-sm">
+              Estica pra cima!
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Instruções e Timer / Ação -->
+        <div class="md:col-span-7 flex flex-col justify-between space-y-6">
+          
+          <div>
+            <h3 id="exercise-title" class="text-2xl md:text-3xl font-extrabold text-pink-600 mb-2">
+              1. A Girafa Alcança as Estrelas
+            </h3>
+            <p id="exercise-desc" class="text-slate-600 text-base md:text-lg leading-relaxed">
+              Levante os dois braços bem alto para o céu! Fique na pontinha dos pés e tente tocar as nuvens!
+            </p>
+          </div>
+
+          <!-- Card da Saúde / Dica Pedagógica -->
+          <div class="bg-blue-50 border-l-4 border-blue-400 p-3.5 rounded-r-xl flex items-start space-x-3">
+            <i class="fa-solid fa-lightbulb text-blue-500 text-xl mt-0.5"></i>
+            <div>
+              <h4 class="text-xs font-bold text-blue-700 uppercase tracking-wider">Super Benefício</h4>
+              <p id="exercise-benefit" class="text-xs md:text-sm text-blue-900">
+                Alonga a coluna e melhora a postura para crescer forte!
+              </p>
+            </div>
+          </div>
+
+          <!-- Timer Visual e Barra de Progresso -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center text-sm font-bold text-slate-600">
+              <span id="timer-status">Segure a postura...</span>
+              <span id="timer-count" class="text-2xl font-black text-purple-600">12s</span>
+            </div>
+
+            <!-- Custom Progress Bar -->
+            <div class="w-full bg-slate-200 h-6 rounded-full overflow-hidden p-1 shadow-inner border border-slate-300">
+              <div id="progress-bar" class="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 h-full rounded-full transition-all duration-1000 w-0"></div>
+            </div>
+          </div>
+
+          <!-- Botões de Ação Principal -->
+          <div class="flex space-x-3 pt-2">
+            <button id="btn-action" onclick="handleActionBtn()" class="flex-1 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-teal-700 transition transform active:scale-95 flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-circle-play"></i>
+              <span id="btn-action-text">Estou Pronto! Começar</span>
+            </button>
+
+            <button id="btn-speak" onclick="speakCurrentInstruction()" class="bg-pink-100 hover:bg-pink-200 text-pink-600 border border-pink-300 font-bold p-3.5 rounded-2xl shadow-sm transition flex items-center justify-center" title="Ouvir Panda de novo">
+              <i class="fa-solid fa-volume-high text-xl"></i>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Screen 3: Reward / Medal Screen -->
+    <div id="screen-reward" class="hidden w-full text-center space-y-6 glass-card p-6 md:p-10 rounded-3xl">
+      <div class="text-6xl animate-bounce">🏆</div>
+
+      <div class="space-y-2">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-pink-500">
+          Parabéns, Super Herói!
+        </h2>
+        <p class="text-slate-600 text-lg max-w-md mx-auto">
+          Você completou toda a rotina de alongamento e deixou seu corpo super saudável e relaxado!
+        </p>
+      </div>
+
+      <!-- Selo / Insígnia Final -->
+      <div class="bg-gradient-to-b from-yellow-100 to-amber-50 border-4 border-yellow-300 rounded-2xl p-6 max-w-sm mx-auto shadow-md space-y-3">
+        <div class="text-7xl">🏅</div>
+        <h3 class="font-bold text-xl text-amber-800">Selo Oficial de Saúde Zen</h3>
+        <p class="text-xs text-amber-700">Concedido pelo Mascotinho Panda por excelente postura, flexibilidade e paz interior!</p>
+        
+        <div class="pt-2 flex justify-center space-x-3 text-2xl">
+          <span>🦒</span>
+          <span>🦋</span>
+          <span>🦉</span>
+          <span>🐻</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+        <button onclick="restartGame()" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-lg px-8 py-3.5 rounded-full shadow-lg border-2 border-white transform transition hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>Fazer de Novo</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer Info -->
+  <footer class="p-4 text-center text-slate-500 text-xs z-10">
+    <p>💡 <strong>Dica para os Pais/Educadores:</strong> Realize os exercícios junto com as crianças diariamente para fortalecer a saúde física e mental.</p>
+  </footer>
+
+  <script>
+    // --- ESTADO E DADOS DO JOGO ---
+    // Textos reescritos com pontuações estratégicas para a fala do sintetizador soar 100% natural, fluida e pausada.
+    const exercises = [
+      {
+        id: 1,
+        title: "1. A Girafa Alcança as Estrelas",
+        badgeName: "Girafa",
+        icon: "🦒",
+        postureText: "Estique os braços lá no alto!",
+        speechSentences: [
+          "Olá, amiguinho! Vamos começar?",
+          "Suba devagar... na pontinha dos pés.",
+          "Agora... estique os dois braços bem alto... para o céu!",
+          "Isso! Como uma girafa alcançando as estrelinhas!"
+        ],
+        displayText: "Olá amiguinho! Suba na pontinha dos pés e estique os dois braços bem alto para o céu!",
+        desc: "Fique em pé, entrelace as mãos e estique os braços para o céu o mais alto que puder. Respire fundo!",
+        benefit: "Melhora a postura, fortalece a coluna e ajuda no crescimento saudável.",
+        duration: 12,
+        cssClass: "pose-giraffe",
+        bgGradient: "from-amber-100 to-orange-100"
+      },
+      {
+        id: 2,
+        title: "2. A Borboleta Calma",
+        badgeName: "Borboleta",
+        icon: "🦋",
+        postureText: "Bata as asas suavemente...",
+        speechSentences: [
+          "Muito bem! Agora... sente-se no chão confortavelmente.",
+          "Junte as solas dos seus pés...",
+          "E balance os joelhos devagar...",
+          "Como uma borboletinha passeando no jardim..."
+        ],
+        displayText: "Sente-se no chão, junte as solas dos pés e balance os joelhos bem devagar...",
+        desc: "Junte as solas dos pés sentadinho no chão. Segure os pés e balance as pernas suavemente para cima e para baixo.",
+        benefit: "Aumenta a flexibilidade do quadril e relaxa a articulação das pernas.",
+        duration: 15,
+        cssClass: "pose-butterfly",
+        bgGradient: "from-blue-100 to-indigo-100"
+      },
+      {
+        id: 3,
+        title: "3. A Coruja Sábia",
+        badgeName: "Coruja",
+        icon: "🦉",
+        postureText: "Gire os ombros devagar!",
+        speechSentences: [
+          "Excelente! Agora... vamos relaxar os ombros.",
+          "Faça círculos bem leves com os ombros... para trás.",
+          "Puxe o ar pelo nariz... e solte devagar pela boca.",
+          "Muito bem... igual a uma corujinha calma..."
+        ],
+        displayText: "Faça círculos bem leves com os ombros para trás... puxe o ar e solte devagar!",
+        desc: "Sentado ou em pé de forma confortável, faça círculos suaves com os ombros para trás e depois para a frente.",
+        benefit: "Alivia a tensão nos ombros e no pescoço acumulada durante o dia.",
+        duration: 12,
+        cssClass: "pose-owl",
+        bgGradient: "from-purple-100 to-pink-100"
+      },
+      {
+        id: 4,
+        title: "4. O Sono do Ursinho Zen",
+        badgeName: "Ursinho",
+        icon: "🐻",
+        postureText: "Respire fundo e relaxe...",
+        speechSentences: [
+          "Chegou a hora do descanso...",
+          "Deite-se ou abrace seus joelhos com carinho...",
+          "Feche os olhos por um momento...",
+          "Respire fundo... e sinta seu corpo relaxar por inteiro..."
+        ],
+        displayText: "Deite-se confortavelmente, feche os olhos por um instante e respire bem fundo...",
+        desc: "Deite de costas ou abrace os joelhos no chão. Inspire pelo nariz e solte o ar devagar pela boca.",
+        benefit: "Reduz o estresse, desacelera os batimentos cardíacos e traz paz para a mente.",
+        duration: 15,
+        cssClass: "pose-bear",
+        bgGradient: "from-emerald-100 to-teal-100"
+      }
+    ];
+
+    let currentExerciseIndex = 0;
+    let timerInterval = null;
+    let timeRemaining = 0;
+    let stars = 0;
+    let isTimerRunning = false;
+    let audioEnabled = false;
+    let voiceEnabled = true;
+
+    // Configurações da síntese de voz
+    let currentPitch = 1.0;
+    let currentRate = 0.85; // Velocidade reduzida para uma fala mais serena e clara
+    let systemVoices = [];
+    let selectedSystemVoice = null;
+
+    // Web Audio API State
+    let audioCtx = null;
+    let isMusicPlaying = false;
+    let musicTimerId = null;
+    let currentStep = 0;
+
+    const melodyNotes = [
+      523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 523.25, 659.25,
+      587.33, 698.46, 880.00, 1174.66, 880.00, 698.46, 587.33, 783.99,
+      523.25, 659.25, 783.99, 1046.50, 1318.51, 1046.50, 783.99, 659.25,
+      698.46, 880.00, 1046.50, 880.00, 783.99, 659.25, 587.33, 523.25
+    ];
+
+    const bassNotes = [
+      130.81, 130.81, 196.00, 130.81, 146.83, 146.83, 220.00, 146.83,
+      130.81, 130.81, 196.00, 130.81, 174.61, 174.61, 220.00, 196.00
+    ];
+
+    // --- INICIALIZAÇÃO E FLUXO DO JOGO ---
+
+    function startGame() {
+      document.getElementById('screen-welcome').classList.add('hidden');
+      document.getElementById('screen-exercise').classList.remove('hidden');
+      document.getElementById('screen-reward').classList.add('hidden');
+      
+      currentExerciseIndex = 0;
+      stars = 0;
+      updateStarCount();
+      loadExercise(currentExerciseIndex);
+
+      if (!isMusicPlaying) {
+        toggleAudio();
+      }
+    }
+
+    function loadExercise(index) {
+      const ex = exercises[index];
+      
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timeRemaining = ex.duration;
+
+      document.getElementById('exercise-step').innerText = `Exercício ${index + 1} de ${exercises.length}`;
+      document.getElementById('exercise-title').innerText = ex.title;
+      document.getElementById('exercise-desc').innerText = ex.desc;
+      document.getElementById('exercise-benefit').innerText = ex.benefit;
+      document.getElementById('panda-speech').innerText = `"${ex.displayText}"`;
+      document.getElementById('posture-label').innerText = ex.postureText;
+      
+      const display = document.getElementById('exercise-icon-display');
+      display.innerText = ex.icon;
+      display.className = `text-7xl md:text-8xl select-none transition-transform ${ex.cssClass}`;
+
+      const container = document.getElementById('panda-avatar-container');
+      container.className = `w-44 h-44 md:w-52 md:h-52 bg-gradient-to-tr ${ex.bgGradient} rounded-full flex items-center justify-center border-4 border-white shadow-md`;
+
+      document.getElementById('timer-count').innerText = `${timeRemaining}s`;
+      document.getElementById('timer-status').innerText = "Pronto para começar?";
+      document.getElementById('progress-bar').style.width = "0%";
+      
+      const btnAction = document.getElementById('btn-action');
+      btnAction.className = "flex-1 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xl py-3.5 px-6 rounded-2xl shadow-lg border-b-4 border-teal-700 transition transform active:scale-95 flex items-center justify-center space-x-2";
+      document.getElementById('btn-action-text').innerText = "Estou Pronto! Começar";
+
+      if (voiceEnabled) {
+        speakExerciseSentences(ex.speechSentences);
+      }
+    }
+
+    function handleActionBtn() {
+      if (!isTimerRunning) {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      isTimerRunning = true;
+      const ex = exercises[currentExerciseIndex];
+      const totalTime = ex.duration;
+
+      document.getElementById('timer-status').innerText = "Segure a postura... Você consegue!";
+      document.getElementById('btn-action-text').innerText = "Em andamento...";
+      
+      const btnAction = document.getElementById('btn-action');
+      btnAction.className = "flex-1 bg-slate-300 text-slate-500 font-bold text-xl py-3.5 px-6 rounded-2xl cursor-not-allowed flex items-center justify-center space-x-2";
+
+      playSoundEffect('start');
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        document.getElementById('timer-count').innerText = `${timeRemaining}s`;
+        
+        const pct = ((totalTime - timeRemaining) / totalTime) * 100;
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          completeExercise();
+        }
+      }, 1000);
+    }
+
+    function completeExercise() {
+      playSoundEffect('win');
+      confetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.7 }
+      });
+
+      stars += 25;
+      updateStarCount();
+
+      const badgeElem = document.getElementById(`badge-${currentExerciseIndex + 1}`);
+      if (badgeElem) badgeElem.classList.remove('opacity-40');
+
+      document.getElementById('panda-speech').innerText = "Muito bem! Você se alongou perfeitamente! 🌟";
+      
+      if (voiceEnabled) {
+        speakExerciseSentences(["Muito bem!", "Você se alongou perfeitamente!"]);
+      }
+
+      setTimeout(() => {
+        currentExerciseIndex++;
+        if (currentExerciseIndex < exercises.length) {
+          loadExercise(currentExerciseIndex);
+        } else {
+          showFinalReward();
+        }
+      }, 3000);
+    }
+
+    function showFinalReward() {
+      document.getElementById('screen-exercise').classList.add('hidden');
+      document.getElementById('screen-reward').classList.remove('hidden');
+
+      playSoundEffect('victory');
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.5 }
+      });
+
+      if (voiceEnabled) {
+        speakExerciseSentences([
+          "Parabéns, amiguinho!",
+          "Você concluiu todos os exercícios...",
+          "E agora é um Super Herói do Alongamento!"
+        ]);
+      }
+    }
+
+    function restartGame() {
+      startGame();
+    }
+
+    function confirmExit() {
+      if (confirm("Quer voltar para a tela inicial?")) {
+        clearInterval(timerInterval);
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        document.getElementById('screen-exercise').classList.add('hidden');
+        document.getElementById('screen-welcome').classList.remove('hidden');
+      }
+    }
+
+    function updateStarCount() {
+      document.getElementById('star-count').innerText = stars;
+    }
+
+    // --- CONTROLE DO MODAL DE VOZ ---
+
+    function openVoiceModal() {
+      document.getElementById('modal-voice').classList.remove('hidden');
+      populateSystemVoices();
+    }
+
+    function closeVoiceModal() {
+      document.getElementById('modal-voice').classList.add('hidden');
+    }
+
+    function onPitchSliderChange() {
+      const slider = document.getElementById('voice-pitch-slider');
+      currentPitch = parseFloat(slider.value);
+      
+      const label = document.getElementById('pitch-val-display');
+      if (currentPitch > 1.15) label.innerText = "Infantil / Agudo";
+      else if (currentPitch >= 0.95) label.innerText = "Amigável";
+      else label.innerText = "Grave e Sereno";
+    }
+
+    function onRateSliderChange() {
+      const slider = document.getElementById('voice-rate-slider');
+      currentRate = parseFloat(slider.value);
+      
+      const label = document.getElementById('rate-val-display');
+      if (currentRate > 1.0) label.innerText = "Rápida";
+      else if (currentRate >= 0.85) label.innerText = "Calma e Pausada";
+      else label.innerText = "Muito Lentinha";
+    }
+
+    function populateSystemVoices() {
+      if (!('speechSynthesis' in window)) return;
+
+      const select = document.getElementById('sys-voice-select');
+      systemVoices = window.speechSynthesis.getVoices();
+
+      if (!systemVoices || systemVoices.length === 0) return;
+
+      select.innerHTML = '';
+      
+      const ptVoices = systemVoices.filter(v => v.lang.includes('pt') || v.lang.includes('PT'));
+      const displayVoices = ptVoices.length > 0 ? ptVoices : systemVoices;
+
+      // Ordena dando prioridade para vozes neurais / de maior qualidade natural
+      displayVoices.sort((a, b) => {
+        const priorityNames = ['google', 'natural', 'microsoft', 'luciana', 'felipe', 'francisca', 'antonio', 'siri', 'daniel'];
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        
+        const scoreA = priorityNames.reduce((acc, p, idx) => nameA.includes(p) ? acc + (10 - idx) : acc, 0);
+        const scoreB = priorityNames.reduce((acc, p, idx) => nameB.includes(p) ? acc + (10 - idx) : acc, 0);
+        
+        return scoreB - scoreA;
+      });
+
+      displayVoices.forEach((voice) => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        
+        let prettyName = voice.name.replace(/(Microsoft|Google|Apple|Desktop|Online \(Natural\))/gi, '').trim();
+        if (!prettyName) prettyName = voice.name;
+
+        option.innerText = `${prettyName} (${voice.lang})`;
+        select.appendChild(option);
+      });
+
+      if (!selectedSystemVoice && displayVoices.length > 0) {
+        selectedSystemVoice = displayVoices[0];
+        select.value = selectedSystemVoice.name;
+      } else if (selectedSystemVoice) {
+        select.value = selectedSystemVoice.name;
+      }
+    }
+
+    function onSystemVoiceChange() {
+      const select = document.getElementById('sys-voice-select');
+      const voiceName = select.value;
+      selectedSystemVoice = systemVoices.find(v => v.name === voiceName) || null;
+      testVoice();
+    }
+
+    function testVoice() {
+      speakExerciseSentences([
+        "Olá, amiguinho!",
+        "Eu sou o Panda Zen...",
+        "Vamos alongar e relaxar o nosso corpo juntos!"
+      ]);
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        populateSystemVoices();
+      };
+    }
+
+    // --- SÍNTESE DE VOZ NATURAL E SEGMENTADA EM FRASES ---
+
+    function speakExerciseSentences(sentencesArray) {
+      if (!('speechSynthesis' in window)) return;
+      
+      // Cancelar qualquer fala anterior
+      window.speechSynthesis.cancel();
+
+      if (!sentencesArray || sentencesArray.length === 0) return;
+
+      sentencesArray.forEach((sentence, index) => {
+        const utterance = new SpeechSynthesisUtterance(sentence);
+
+        utterance.lang = 'pt-BR';
+        utterance.pitch = currentPitch;
+        utterance.rate = currentRate;
+
+        if (selectedSystemVoice) {
+          utterance.voice = selectedSystemVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      });
+    }
+
+    function speakCurrentInstruction() {
+      const ex = exercises[currentExerciseIndex];
+      speakExerciseSentences(ex.speechSentences);
+    }
+
+    // --- MÚSICA ANIMADA & SINTETIZADOR RÍTMICO (WEB AUDIO API) ---
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const icon = document.getElementById('audio-icon');
+      const text = document.getElementById('audio-text');
+      const btn = document.getElementById('btn-audio');
+
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (audioEnabled) {
+        icon.className = "fa-solid fa-compact-disc text-base animate-spin";
+        text.innerText = "Música: LIGADA 🎶";
+        btn.className = "px-4 py-1.5 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold rounded-full border-2 border-white shadow-md flex items-center space-x-2 transition hover:scale-105 active:scale-95 text-sm animate-pulse";
+        startMusicLoop();
+      } else {
+        icon.className = "fa-solid fa-music text-base";
+        text.innerText = "Música: DESLIGADA 🔇";
+        btn.className = "px-4 py-1.5 bg-slate-400 hover:bg-slate-500 text-white font-bold rounded-full border-2 border-white shadow-md flex items-center space-x-2 transition hover:scale-105 active:scale-95 text-sm";
+        stopMusicLoop();
+      }
+    }
+
+    function startMusicLoop() {
+      if (isMusicPlaying) return;
+      isMusicPlaying = true;
+      currentStep = 0;
+      
+      const stepTime = 120; // Ritmo animado e equilibrado
+
+      musicTimerId = setInterval(() => {
+        if (!audioEnabled || !audioCtx) return;
+        playMusicStep(currentStep);
+        currentStep = (currentStep + 1) % 32;
+      }, stepTime);
+    }
+
+    function stopMusicLoop() {
+      isMusicPlaying = false;
+      if (musicTimerId) {
+        clearInterval(musicTimerId);
+        musicTimerId = null;
+      }
+    }
+
+    function playMusicStep(step) {
+      const now = audioCtx.currentTime;
+
+      // 1. Melodia Alegre
+      const freq = melodyNotes[step];
+      if (freq) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+
+      // 2. Baixo Rítmico
+      if (step % 2 === 0) {
+        const bassFreq = bassNotes[(step / 2) % bassNotes.length];
+        const bassOsc = audioCtx.createOscillator();
+        const bassGain = audioCtx.createGain();
+
+        bassOsc.type = 'sawtooth';
+        bassOsc.frequency.setValueAtTime(bassFreq, now);
+
+        bassGain.gain.setValueAtTime(0.05, now);
+        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        bassOsc.connect(bassGain);
+        bassGain.connect(audioCtx.destination);
+        bassOsc.start(now);
+        bassOsc.stop(now + 0.23);
+      }
+
+      // 3. Batida de Bumbo
+      if (step % 8 === 0) {
+        const kickOsc = audioCtx.createOscillator();
+        const kickGain = audioCtx.createGain();
+
+        kickOsc.type = 'sine';
+        kickOsc.frequency.setValueAtTime(140, now);
+        kickOsc.frequency.exponentialRampToValueAtTime(30, now + 0.12);
+
+        kickGain.gain.setValueAtTime(0.2, now);
+        kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        kickOsc.connect(kickGain);
+        kickGain.connect(audioCtx.destination);
+        kickOsc.start(now);
+        kickOsc.stop(now + 0.13);
+      }
+
+      // 4. Caixa / Palmas
+      if (step % 8 === 4) {
+        const bufferSize = audioCtx.sampleRate * 0.07;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = buffer;
+
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 1000;
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.1, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.07);
+
+        whiteNoise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+
+        whiteNoise.start(now);
+      }
+    }
+
+    function playSoundEffect(type) {
+      if (!audioCtx) return;
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'start') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'win' || type === 'victory') {
+          const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+          notes.forEach((freq, idx) => {
+            const noteOsc = audioCtx.createOscillator();
+            const noteGain = audioCtx.createGain();
+            noteOsc.type = 'sine';
+            noteOsc.frequency.value = freq;
+            noteOsc.connect(noteGain);
+            noteGain.connect(audioCtx.destination);
+            
+            const startTime = audioCtx.currentTime + (idx * 0.08);
+            noteGain.gain.setValueAtTime(0.12, startTime);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+            
+            noteOsc.start(startTime);
+            noteOsc.stop(startTime + 0.35);
+          });
+        }
+      } catch (e) {
+        // Fallback silencioso
+      }
+    }
+  </script>
+</body>
+</html>
